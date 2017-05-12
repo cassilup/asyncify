@@ -19,10 +19,26 @@ fs.readFile(filename, 'utf8', function(err, contents) {
   let insideAPromise = 0;
   let lastPromiseLevel;
   let promiseStart = [];
+  let line = 1;
+  let insideADoubleSlashComment;
 
   for (let position = 0; position < contents.length; position++) {
     const character = contents[position];
     let newPharantesis;
+
+    if (character === "\n") {
+      line++;
+
+      // reset doubleSlashComment mode if enabled
+      insideADoubleSlashComment = false;
+    }
+
+    if (insideADoubleSlashComment) { continue; }
+
+    // if "//"
+    if (character === "/" && contents[position + 1] === "/") {
+      insideADoubleSlashComment = true;
+    }
 
     switch (character) {
       case "(":

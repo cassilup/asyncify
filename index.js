@@ -12,7 +12,7 @@ if (process.argv.length < 3) {
 // grab filename given as paramater
 const [filename] = [...process.argv].reverse();
 
-console.log(`===================\nParsing ${filename}\n===================`);
+console.log(`\n\n===================\n `+colors.cyan(`Parsing ${filename}`)+ `\n===================\n`);
 
 fs.readFile(filename, 'utf8', function(err, contents) {
   // let parantheses = [];
@@ -47,6 +47,7 @@ fs.readFile(filename, 'utf8', function(err, contents) {
       case "(":
         if (contents.substr(position - 5, 5) === ".then") {
           insideAPromise++;
+
           promiseStart.push({ position, level, line });
         }
         level++;
@@ -55,23 +56,26 @@ fs.readFile(filename, 'utf8', function(err, contents) {
         level--;
         if (insideAPromise && promiseStart[promiseStart.length - 1].level === level) {
           const lastPromiseStart = promiseStart.pop();
+
           insideAPromise--;
+
           console.log(
-            `!!!!!!!!!!!!!!!!!!!!!! Identified a promise: ` +
-            `${lastPromiseStart.line}:${lastPromiseStart.position - lineStartPositions[lastPromiseStart.line - 2] - 1}` +
-            `->` +
-            `${line}:${position - lineStartPositions[line - 2] + 1}`
+            colors.yellow("[!]")+` Identified a promise: ` +
+            colors.yellow(`${lastPromiseStart.line}:${lastPromiseStart.position - lineStartPositions[lastPromiseStart.line - 2] - 1}`) +
+            ` -> ` +
+            colors.yellow(`${line}:${position - lineStartPositions[line - 2] + 1}`)
           );
 
           console.log(
             colors.gray(contents.substr(lineStartPositions[lastPromiseStart.line - 2], lastPromiseStart.position - lineStartPositions[lastPromiseStart.line - 2] + 1)) +
-            colors.green(contents.substr(lastPromiseStart.position + 1, position - lastPromiseStart.position))
+            colors.yellow(contents.substr(lastPromiseStart.position + 1, position - lastPromiseStart.position - 1)) +
+            colors.gray(contents.substr(position, 1)) + "\n\n" +
+            colors.cyan("BECOMES:\n\n") +
+            colors.green("await " + contents.substr(lineStartPositions[lastPromiseStart.line - 2], lastPromiseStart.position - lineStartPositions[lastPromiseStart.line - 2] - 5).trim()) +
+            "\n\n"
           );
         }
         break;
     }
   }
 });
-
-// tried regex, doesn't work
-// now trying to count "(" and ")".

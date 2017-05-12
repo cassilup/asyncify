@@ -43,11 +43,8 @@ fs.readFile(filename, 'utf8', function(err, contents) {
     switch (character) {
       case "(":
         if (contents.substr(position - 5, 5) === ".then") {
-          // newPharantesis = { char: "(", position, level, isPromise: true };
           insideAPromise++;
-          promiseStart.push({ position, level });
-        // } else {
-        //   newPharantesis = { char: "(", position, level };
+          promiseStart.push({ position, level, line });
         }
         level++;
         break;
@@ -56,25 +53,12 @@ fs.readFile(filename, 'utf8', function(err, contents) {
         if (insideAPromise && promiseStart[promiseStart.length - 1].level == level) {
           const lastPromiseStart = promiseStart.pop();
           insideAPromise--;
-          console.log(`!!!!!!!!!!!!!!!!!!!!!! Identified a promise: ${lastPromiseStart.position + 1}->${position}`);
-          console.log(contents.substr(lastPromiseStart.position + 1, position - lastPromiseStart.position));
+          console.log(`!!!!!!!!!!!!!!!!!!!!!! Identified a promise: ${lastPromiseStart.position + 1}->${position}, line ${line}`);
+          console.log(contents.substr(lastPromiseStart.position + 1, position - lastPromiseStart.position, line));
         }
-        // newPharantesis = { char: ")", position, level };
         break;
     }
-
-    // if (newPharantesis) {
-    //   parantheses.push(newPharantesis);
-    // }
   }
-
-  // parantheses.forEach((result, i) => {
-  //   let spaces = "";
-  //   for (let j = 0; j < parseInt(result["level"], 10); j++) {
-  //     spaces += " » ";
-  //   }
-  //   console.log(`${spaces}i: ${i}\n${spaces}-------\n${spaces}${JSON.stringify(result)}\n${spaces}-------`);
-  // });
 });
 
 // tried regex, doesn't work

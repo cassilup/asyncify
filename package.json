@@ -1,0 +1,30 @@
+{
+  "name": "asyncify",
+  "version": "1.0.0",
+  "description": "script that identifies and converts Promises to Async/Await syntax",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cassilup/asyncify.git"
+  },
+  "keywords": [
+    "async",
+    "await",
+    "promise",
+    "javascript",
+    "es8",
+    "es2017"
+  ],
+  "author": "Cassi Lup",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/cassilup/asyncify/issues"
+  },
+  "homepage": "https://github.com/cassilup/asyncify#readme",
+  "dependencies": {
+    "colors": "^1.1.2"
+  }
+}

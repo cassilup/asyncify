@@ -1,4 +1,5 @@
 var fs = require('fs');
+var colors = require('colors');
 
 if (process.argv.length < 3) {
   console.error("You must pass a filename as a parameter.");
@@ -20,6 +21,7 @@ fs.readFile(filename, 'utf8', function(err, contents) {
   let lastPromiseLevel;
   let promiseStart = [];
   let line = 1;
+  let lineStartPositions = [];
   let insideADoubleSlashComment;
 
   for (let position = 0; position < contents.length; position++) {
@@ -28,6 +30,7 @@ fs.readFile(filename, 'utf8', function(err, contents) {
 
     if (character === "\n") {
       line++;
+      lineStartPositions.push(position);
 
       // reset doubleSlashComment mode if enabled
       insideADoubleSlashComment = false;
@@ -50,11 +53,20 @@ fs.readFile(filename, 'utf8', function(err, contents) {
         break;
       case ")":
         level--;
-        if (insideAPromise && promiseStart[promiseStart.length - 1].level == level) {
+        if (insideAPromise && promiseStart[promiseStart.length - 1].level === level) {
           const lastPromiseStart = promiseStart.pop();
           insideAPromise--;
-          console.log(`!!!!!!!!!!!!!!!!!!!!!! Identified a promise: ${lastPromiseStart.position + 1}->${position}, line ${line}`);
-          console.log(contents.substr(lastPromiseStart.position + 1, position - lastPromiseStart.position, line));
+          console.log(
+            `!!!!!!!!!!!!!!!!!!!!!! Identified a promise: ` +
+            `${lastPromiseStart.line}:${lastPromiseStart.position - lineStartPositions[lastPromiseStart.line - 2] - 1}` +
+            `->` +
+            `${line}:${position - lineStartPositions[line - 2] + 1}`
+          );
+
+          console.log(
+            colors.gray(contents.substr(lineStartPositions[lastPromiseStart.line - 2], lastPromiseStart.position - lineStartPositions[lastPromiseStart.line - 2] + 1)) +
+            colors.green(contents.substr(lastPromiseStart.position + 1, position - lastPromiseStart.position))
+          );
         }
         break;
     }

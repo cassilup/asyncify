@@ -15,33 +15,31 @@ const [filename] = [...process.argv].reverse();
 console.log(`\n\n===================\n `+colors.cyan(`Parsing ${filename}`)+ `\n===================\n`);
 
 fs.readFile(filename, 'utf8', function(err, contents) {
-  // let parantheses = [];
   let level = 0;
   let insideAPromise = 0;
   let lastPromiseLevel;
   let promiseStart = [];
   let line = 1;
-  let lineStartPositions = [];
+  let lineEndPositions = [];
   let insideADoubleSlashComment;
 
   for (let position = 0; position < contents.length; position++) {
     const character = contents[position];
-    let newPharantesis;
 
     if (character === "\n") {
+      lineEndPositions.push(position);
       line++;
-      lineStartPositions.push(position);
 
       // reset doubleSlashComment mode if enabled
       insideADoubleSlashComment = false;
     }
 
-    if (insideADoubleSlashComment) { continue; }
-
     // if "//"
-    if (character === "/" && contents[position + 1] === "/") {
+    if (character === "/" && contents[position - 1] === "/") {
       insideADoubleSlashComment = true;
     }
+    if (insideADoubleSlashComment) continue;
+    // TODO: Treat /**/ type comments
 
     switch (character) {
       case "(":
@@ -54,24 +52,39 @@ fs.readFile(filename, 'utf8', function(err, contents) {
         break;
       case ")":
         level--;
+
         if (insideAPromise && promiseStart[promiseStart.length - 1].level === level) {
           const lastPromiseStart = promiseStart.pop();
 
           insideAPromise--;
 
+          // determine line end
+          let promiseLineEndPosition;
+          for (let tempPosition = position; tempPosition < contents.length; tempPosition++) {
+            if (contents[tempPosition] === "\n") {
+              promiseLineEndPosition = tempPosition;
+              break;
+            }
+          }
+
           console.log(
             colors.yellow("[!]")+` Identified a promise: ` +
-            colors.yellow(`${lastPromiseStart.line}:${lastPromiseStart.position - lineStartPositions[lastPromiseStart.line - 2] - 1}`) +
+            colors.yellow(`${lastPromiseStart.line}:${lastPromiseStart.position - lineEndPositions[lastPromiseStart.line - 2] - 1}`) +
             ` -> ` +
-            colors.yellow(`${line}:${position - lineStartPositions[line - 2] + 1}`)
+            colors.yellow(`${line}:${position - lineEndPositions[line - 2] + 1}`)
           );
 
           console.log(
-            colors.gray(contents.substr(lineStartPositions[lastPromiseStart.line - 2], lastPromiseStart.position - lineStartPositions[lastPromiseStart.line - 2] + 1)) +
+            colors.cyan("\n\nBEFORE:\n") +
+            // show beginning of line until beginning of promise
+            colors.gray(contents.substr(lineEndPositions[lastPromiseStart.line - 2], lastPromiseStart.position - lineEndPositions[lastPromiseStart.line - 2] + 1)) +
+            // show promise contents
             colors.yellow(contents.substr(lastPromiseStart.position + 1, position - lastPromiseStart.position - 1)) +
-            colors.gray(contents.substr(position, 1)) + "\n\n" +
-            colors.cyan("BECOMES:\n\n") +
-            colors.green("await " + contents.substr(lineStartPositions[lastPromiseStart.line - 2], lastPromiseStart.position - lineStartPositions[lastPromiseStart.line - 2] - 5).trim()) +
+            // show until the end of the line on which promise ends
+            colors.gray(contents.substr(position, promiseLineEndPosition - position)) + "\n\n" +
+
+            colors.cyan("\nAFTER:\n\n") +
+            colors.green("await " + contents.substr(lineEndPositions[lastPromiseStart.line - 2], lastPromiseStart.position - lineEndPositions[lastPromiseStart.line - 2] - ".then".length).trim()) +
             "\n\n"
           );
         }

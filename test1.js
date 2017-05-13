@@ -34,3 +34,21 @@ export const sayHello = () => {
 // 6. wrap promise in try/catch block
 // 7. put contents of resolve block next to the `await` line,
 // 8. put contents of the error block in the `catch` block.
+
+
+// More Complex Example:
+//
+// export const sayHi = () => {
+//   let response;
+//
+//   runHiPromise().then((response) => {
+//     console.log(response);
+//     runChildPromise().then((response) => {
+//       console.log(response);
+//     }, (error) => {
+//       console.log(error);
+//     });
+//   }, (error) => {
+//     console.error(error);
+//   });
+// };

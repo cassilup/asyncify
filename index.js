@@ -12,8 +12,6 @@ if (process.argv.length < 3) {
 // grab filename given as paramater
 const [filename] = [...process.argv].reverse();
 
-console.log(`\n\n===================\n `+colors.cyan(`Parsing ${filename}`)+ `\n===================\n`);
-
 fs.readFile(filename, 'utf8', function(err, contents) {
   let level = 0;
   let insideAPromise = 0;
@@ -22,6 +20,18 @@ fs.readFile(filename, 'utf8', function(err, contents) {
   let line = 1;
   let lineEndPositions = [];
   let insideADoubleSlashComment;
+
+  if (!contents) {
+    console.error("File not found.");
+    return;
+  }
+
+  if (!contents.length) {
+    console.error("File is empty.");
+    return;
+  }
+
+  console.log(`\n\n===================\n `+colors.cyan(`Parsing ${filename}`)+ `\n===================\n`);
 
   for (let position = 0; position < contents.length; position++) {
     const character = contents[position];
@@ -84,7 +94,10 @@ fs.readFile(filename, 'utf8', function(err, contents) {
             colors.gray(contents.substr(position, promiseLineEndPosition - position)) + "\n\n" +
 
             colors.cyan("\nAFTER:\n\n") +
-            colors.green("await " + contents.substr(lineEndPositions[lastPromiseStart.line - 2], lastPromiseStart.position - lineEndPositions[lastPromiseStart.line - 2] - ".then".length).trim()) +
+            colors.green(
+              "  const " + contents.substr(lineEndPositions[lastPromiseStart.line - 2], lastPromiseStart.position - lineEndPositions[lastPromiseStart.line - 2] - ".then()".length).trim() + "Response" +
+              " = await " +
+              contents.substr(lineEndPositions[lastPromiseStart.line - 2], lastPromiseStart.position - lineEndPositions[lastPromiseStart.line - 2] - ".then".length).trim() + ";") +
             "\n\n"
           );
         }

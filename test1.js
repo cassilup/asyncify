@@ -29,7 +29,7 @@ export const sayHello = () => {
 // [DONE] 1. identify promises (tried regex didn't work, now counting parantheses)
 // [DONE] 2. extract promise contents (`.then(successCb() {...}, errorCb() {...})`),
 // [DONE] 3. add `await` keyword before invocation
-// 4. save (awaited) result in a const (name preferably `${method}Result`)
+// [DONE] 4. save (awaited) result in a const (name preferably `${method}Result`)
 // 5. add `async` keyword to parent function
 // 6. wrap promise in try/catch block
 // 7. put contents of resolve block next to the `await` line,
